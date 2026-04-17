@@ -1117,17 +1117,12 @@ function renderDeferredItem(item) {
 }
 
 function renderArchiveItem(item) {
-  let domain = '';
-  try { domain = new URL(item.url).hostname.replace(/^www\./, ''); } catch {}
   const ago = item.completedAt ? timeAgo(item.completedAt) : timeAgo(item.savedAt);
   const safeTitle = (item.title || '').replace(/"/g, '&quot;');
   return `
-    <div class="archive-item" data-deferred-id="${item.id}">
-      <a href="${item.url}" target="_top" class="archive-item-title" title="${safeTitle}">${item.title || item.url}</a>
+    <div class="archive-item clickable" data-action="restore-deferred" data-deferred-id="${item.id}" title="Restore to Saved for Later">
+      <span class="archive-item-title">${item.title || item.url}</span>
       <span class="archive-item-date">${ago}</span>
-      <button class="deferred-dismiss" data-action="restore-deferred" data-deferred-id="${item.id}" title="Restore to Saved for Later">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" /></svg>
-      </button>
     </div>`;
 }
 

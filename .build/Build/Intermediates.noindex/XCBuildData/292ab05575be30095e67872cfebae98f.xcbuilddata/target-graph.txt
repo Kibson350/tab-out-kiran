@@ -1,0 +1,4 @@
+Target dependency graph (2 targets)
+Target 'Tab Out (macOS)' in project 'Tab Out'
+➜ Explicit dependency on target 'Tab Out Extension (macOS)' in project 'Tab Out'
+Target 'Tab Out Extension (macOS)' in project 'Tab Out' (no dependencies)

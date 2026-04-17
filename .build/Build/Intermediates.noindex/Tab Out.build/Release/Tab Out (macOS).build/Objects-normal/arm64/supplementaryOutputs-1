@@ -1,0 +1,12 @@
+{
+  "/Users/kirangibson/tab-out/Tab Out/Shared (App)/ViewController.swift" : {
+    "abi-baseline-json" : "/Users/kirangibson/tab-out/.build/Build/Intermediates.noindex/Tab Out.build/Release/Tab Out (macOS).build/Objects-normal/arm64/Tab_Out.abi.json",
+    "const-values" : "/Users/kirangibson/tab-out/.build/Build/Intermediates.noindex/Tab Out.build/Release/Tab Out (macOS).build/Objects-normal/arm64/Tab Out (macOS)-primary.swiftconstvalues",
+    "dependencies" : "/Users/kirangibson/tab-out/.build/Build/Intermediates.noindex/Tab Out.build/Release/Tab Out (macOS).build/Objects-normal/arm64/Tab Out (macOS)-primary.d",
+    "diagnostics" : "/Users/kirangibson/tab-out/.build/Build/Intermediates.noindex/Tab Out.build/Release/Tab Out (macOS).build/Objects-normal/arm64/Tab Out (macOS)-primary.dia",
+    "objc-header" : "/Users/kirangibson/tab-out/.build/Build/Intermediates.noindex/Tab Out.build/Release/Tab Out (macOS).build/Objects-normal/arm64/Tab_Out-Swift.h",
+    "swiftdoc" : "/Users/kirangibson/tab-out/.build/Build/Intermediates.noindex/Tab Out.build/Release/Tab Out (macOS).build/Objects-normal/arm64/Tab_Out.swiftdoc",
+    "swiftmodule" : "/Users/kirangibson/tab-out/.build/Build/Intermediates.noindex/Tab Out.build/Release/Tab Out (macOS).build/Objects-normal/arm64/Tab_Out.swiftmodule",
+    "swiftsourceinfo" : "/Users/kirangibson/tab-out/.build/Build/Intermediates.noindex/Tab Out.build/Release/Tab Out (macOS).build/Objects-normal/arm64/Tab_Out.swiftsourceinfo"
+  }
+}
