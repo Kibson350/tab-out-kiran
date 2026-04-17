@@ -41,28 +41,34 @@ git clone https://github.com/Kibson350/tab-out-kiran.git
 
 ---
 
-## Safari — Install from GitHub (one-liner)
+## Safari — Install & update (one-liner)
 
-Every push to `main` automatically builds a Safari extension DMG via GitHub Actions.
+Safari extensions must be signed with your Apple Developer certificate — they can't be distributed as a pre-built binary. The `build-safari.sh` script handles everything: pull, build, sign, and install.
 
-To install or update, paste this in Terminal:
+**First time — clone and build:**
 
 ```bash
-curl -sL "$(curl -s https://api.github.com/repos/Kibson350/tab-out-kiran/releases/latest | grep -o 'https://[^"]*\.dmg' | head -1)" -o /tmp/TabOut.dmg && hdiutil attach -quiet /tmp/TabOut.dmg && cp -Rf "/Volumes/Tab Out/Tab Out.app" /Applications/ && hdiutil detach -quiet "/Volumes/Tab Out" && xattr -dr com.apple.quarantine "/Applications/Tab Out.app" && pkill -x "Tab Out" 2>/dev/null; open "/Applications/Tab Out.app" && echo "Tab Out updated"
+git clone https://github.com/Kibson350/tab-out-kiran.git ~/tab-out && bash ~/tab-out/build-safari.sh
+```
+
+**After any commit — update:**
+
+```bash
+bash ~/tab-out/build-safari.sh
 ```
 
 This will:
-1. Download the latest DMG from GitHub releases
-2. Copy the app to `/Applications`
-3. Strip the Gatekeeper quarantine flag (needed since it's ad-hoc signed)
-4. Restart the app so Safari picks up the new extension
+1. Pull latest from `main`
+2. Build the Xcode project signed with your Apple Development certificate
+3. Copy the app to `/Applications` and restart it
 
 **After running it:**
-1. Open Safari → Settings → Extensions
-2. Enable **Tab Out**
-3. Go to **Develop → Allow Unsigned Extensions** (re-enable after each Safari restart)
+1. Open Safari → Settings → Extensions → enable **Tab Out**
+2. Go to **Develop → Allow Unsigned Extensions**
 
-> **Note:** If you don't see a Develop menu in Safari, go to Safari → Settings → Advanced → check "Show features for web developers"
+> **Note:** If you don't see a Develop menu, go to Safari → Settings → Advanced → check "Show features for web developers"
+
+> **Note:** `build-safari.sh` has a hardcoded certificate hash — if you're setting this up on a different machine, replace the `CODE_SIGN_IDENTITY` value in the script with your own certificate hash from `security find-identity -p codesigning -v`
 
 ---
 
@@ -100,14 +106,9 @@ Safari → Settings → Extensions → enable **Tab Out**
 
 ---
 
-## How auto-updates work
+## How updates work
 
-A GitHub Action (`.github/workflows/release.yml`) triggers on every push to `main`. It:
-1. Builds the macOS Safari extension with Xcode
-2. Packages it as a DMG
-3. Publishes it to GitHub Releases as `latest`
-
-The one-liner above always pulls from that `latest` release — so committing a change and running the command is all you need.
+Commit and push to `main`, then run `bash ~/tab-out/build-safari.sh`. The script pulls the latest, rebuilds, and reinstalls — one command for the full cycle.
 
 ---
 
