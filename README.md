@@ -6,6 +6,8 @@ Tab Out replaces your new tab page with a clean dashboard of everything you have
 
 Works in both **Chrome** and **Safari**.
 
+![Tab Out screenshot](assets/screenshot.png)
+
 ---
 
 ## Features
