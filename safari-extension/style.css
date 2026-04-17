@@ -766,6 +766,7 @@ footer {
   gap: 8px;
   padding: 6px 0;
   border-bottom: 1px solid rgba(154, 145, 138, 0.08);
+  cursor: pointer;
 }
 
 .archive-item:last-child { border-bottom: none; }
