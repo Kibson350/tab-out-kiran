@@ -2,72 +2,112 @@
 
 **Keep tabs on your tabs.**
 
-Tab Out is a Chrome extension that replaces your new tab page with a dashboard of everything you have open. Tabs are grouped by domain, with homepages (Gmail, X, LinkedIn, etc.) pulled into their own group. Close tabs with a satisfying swoosh + confetti.
+Tab Out replaces your new tab page with a clean dashboard of everything you have open — grouped by domain, with one-click close, duplicate detection, save for later, and more.
 
-No server. No account. No external API calls. Just a Chrome extension.
-
----
-
-## Install with a coding agent
-
-Send your coding agent (Claude Code, Codex, etc.) this repo and say **"install this"**:
-
-```
-https://github.com/Kibson350/tab-out
-```
-
-The agent will walk you through it. Takes about 1 minute.
+Works in both **Chrome** and **Safari**.
 
 ---
 
 ## Features
 
-- **See all your tabs at a glance** on a clean grid, grouped by domain
-- **Homepages group** pulls Gmail inbox, X home, YouTube, LinkedIn, GitHub homepages into one card
-- **Close tabs with style** with swoosh sound + confetti burst
-- **Duplicate detection** flags when you have the same page open twice, with one-click cleanup
-- **Click any tab to jump to it** across windows, no new tab opened
-- **Save for later** bookmark tabs to a checklist before closing them
-- **Localhost grouping** shows port numbers next to each tab so you can tell your vibe coding projects apart
-- **Expandable groups** show the first 8 tabs with a clickable "+N more"
-- **100% local** your data never leaves your machine
-- **Pure Chrome extension** no server, no Node.js, no npm, no setup beyond loading the extension
+- **See all your tabs at a glance** — clean grid grouped by domain
+- **Homepages group** — Gmail, X, YouTube, LinkedIn, GitHub homepages in one card
+- **Close tabs with style** — swoosh sound + confetti burst
+- **Duplicate detection** — flags the same page open twice, one-click cleanup
+- **Click any tab to jump to it** — works across windows
+- **Save for later** — bookmark tabs to a checklist before closing
+- **Restore archived tabs** — move completed items back to the active list
+- **Localhost grouping** — shows port numbers so you can tell projects apart
+- **100% local** — your data never leaves your machine
 
 ---
 
-## Manual Setup
+## Chrome — Manual Setup
 
 **1. Clone the repo**
 
 ```bash
-git clone https://github.com/zarazhangrui/tab-out.git
+git clone https://github.com/Kibson350/tab-out-kiran.git
 ```
 
-**2. Load the Chrome extension**
+**2. Load the extension**
 
-1. Open Chrome and go to `chrome://extensions`
+1. Go to `chrome://extensions`
 2. Enable **Developer mode** (top-right toggle)
 3. Click **Load unpacked**
-4. Navigate to the `extension/` folder inside the cloned repo and select it
+4. Select the `extension/` folder
 
-**3. Open a new tab**
-
-You'll see Tab Out.
+**3. Open a new tab** — you'll see Tab Out.
 
 ---
 
-## How it works
+## Safari — Install from GitHub (one-liner)
 
-```
-You open a new tab
-  -> Tab Out shows your open tabs grouped by domain
-  -> Homepages (Gmail, X, etc.) get their own group at the top
-  -> Click any tab title to jump to it
-  -> Close groups you're done with (swoosh + confetti)
-  -> Save tabs for later before closing them
+Every push to `main` automatically builds a Safari extension DMG via GitHub Actions.
+
+To install or update, paste this in Terminal:
+
+```bash
+curl -sL "$(curl -s https://api.github.com/repos/Kibson350/tab-out-kiran/releases/latest | grep -o 'https://[^"]*\.dmg' | head -1)" -o /tmp/TabOut.dmg && hdiutil attach -quiet /tmp/TabOut.dmg && cp -Rf "/Volumes/Tab Out/Tab Out.app" /Applications/ && hdiutil detach -quiet "/Volumes/Tab Out" && xattr -dr com.apple.quarantine "/Applications/Tab Out.app" && pkill -x "Tab Out" 2>/dev/null; open "/Applications/Tab Out.app" && echo "Tab Out updated"
 ```
 
-Everything runs inside the Chrome extension. No external server, no API calls, no data sent anywhere. Saved tabs are stored in `chrome.storage.local`.
+This will:
+1. Download the latest DMG from GitHub releases
+2. Copy the app to `/Applications`
+3. Strip the Gatekeeper quarantine flag (needed since it's ad-hoc signed)
+4. Restart the app so Safari picks up the new extension
+
+**After running it:**
+1. Open Safari → Settings → Extensions
+2. Enable **Tab Out**
+3. Go to **Develop → Allow Unsigned Extensions** (re-enable after each Safari restart)
+
+> **Note:** If you don't see a Develop menu in Safari, go to Safari → Settings → Advanced → check "Show features for web developers"
+
+---
+
+## Safari — Build from source (Xcode)
+
+If you want to build the Safari extension yourself:
+
+**1. Clone and convert**
+
+```bash
+git clone https://github.com/Kibson350/tab-out-kiran.git
+cd tab-out-kiran
+xcrun safari-web-extension-converter safari-extension/ \
+  --project-location . \
+  --app-name "Tab Out" \
+  --bundle-identifier "com.tabout.extension" \
+  --no-open
+```
+
+**2. Open in Xcode**
+
+```bash
+open "Tab Out/Tab Out.xcodeproj"
+```
+
+**3. Sign and run**
+
+1. Select the `Tab Out (macOS)` scheme
+2. For each target (Tab Out macOS + Tab Out Extension macOS): Signing & Capabilities → set your Apple ID as the Team
+3. Hit **⌘R**
+
+**4. Enable in Safari**
+
+Safari → Settings → Extensions → enable **Tab Out**
+
+---
+
+## How auto-updates work
+
+A GitHub Action (`.github/workflows/release.yml`) triggers on every push to `main`. It:
+1. Builds the macOS Safari extension with Xcode
+2. Packages it as a DMG
+3. Publishes it to GitHub Releases as `latest`
+
+The one-liner above always pulls from that `latest` release — so committing a change and running the command is all you need.
 
 ---
 
@@ -75,17 +115,15 @@ Everything runs inside the Chrome extension. No external server, no API calls, n
 
 | What | How |
 |------|-----|
-| Extension | Chrome Manifest V3 |
-| Storage | chrome.storage.local |
+| Chrome extension | Manifest V3 |
+| Safari extension | Safari Web Extension (Xcode wrapper) |
+| Storage | `chrome.storage.local` / `browser.storage.local` |
 | Sound | Web Audio API (synthesized, no files) |
-| Animations | CSS transitions + JS confetti particles |
+| Animations | CSS transitions + JS confetti |
+| Auto-build | GitHub Actions + `xcodebuild` |
 
 ---
 
 ## License
 
 MIT
-
----
-
-Built by [Zara](https://x.com/zarazhangrui)

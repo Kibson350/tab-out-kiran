@@ -1,11 +1,14 @@
 /* ================================================================
-   Tab Out — Dashboard App (Pure Extension Edition)
+   Tab Out — Dashboard App (Safari Extension Edition)
 
-   No server required. All data stored in chrome.storage.local and
-   localStorage. Tabs managed via direct chrome.tabs API.
+   No server required. All data stored in storage.local and
+   localStorage. Tabs managed via direct tabs API.
    ================================================================ */
 
 'use strict';
+
+/* Safari uses browser.* namespace; Chrome uses chrome.* — support both */
+const _api = typeof browser !== 'undefined' ? browser : chrome;
 
 /* ----------------------------------------------------------------
    DARK MODE — apply immediately to prevent flash
@@ -15,7 +18,7 @@ if (localStorage.getItem('tabout-dark-mode') === 'true') {
 }
 
 /* ----------------------------------------------------------------
-   APP CONFIG — stored in chrome.storage.local
+   APP CONFIG — stored in _api.storage.local
    ---------------------------------------------------------------- */
 let appConfig = {
   userName: '',
@@ -40,7 +43,7 @@ const SEARCH_ENGINES = {
 
 async function loadAppConfig() {
   try {
-    const result = await chrome.storage.local.get('tabout-config');
+    const result = await _api.storage.local.get('tabout-config');
     if (result['tabout-config']) {
       appConfig = { ...appConfig, ...result['tabout-config'] };
     }
@@ -49,7 +52,7 @@ async function loadAppConfig() {
 
 async function saveAppConfig(updates) {
   appConfig = { ...appConfig, ...updates };
-  await chrome.storage.local.set({ 'tabout-config': appConfig });
+  await _api.storage.local.set({ 'tabout-config': appConfig });
   applyConfigToUI();
   showToast('Settings saved');
 }
@@ -436,9 +439,8 @@ let openTabs = [];
 
 async function fetchOpenTabs() {
   try {
-    const extensionId = chrome.runtime.id;
-    const newtabUrl = `chrome-extension://${extensionId}/index.html`;
-    const tabs = await chrome.tabs.query({});
+    const newtabUrl = _api.runtime.getURL('index.html');
+    const tabs = await _api.tabs.query({});
     openTabs = tabs.map(t => ({
       id:       t.id,
       url:      t.url,
@@ -446,7 +448,7 @@ async function fetchOpenTabs() {
       favIconUrl: t.favIconUrl,
       windowId: t.windowId,
       active:   t.active,
-      isTabOut: t.url === newtabUrl || t.url === 'chrome://newtab/',
+      isTabOut: t.url === newtabUrl,
     }));
   } catch {
     openTabs = [];
@@ -465,7 +467,7 @@ async function closeTabsByUrls(urls) {
       catch { /* skip */ }
     }
   }
-  const allTabs = await chrome.tabs.query({});
+  const allTabs = await _api.tabs.query({});
   const toClose = allTabs.filter(tab => {
     const tabUrl = tab.url || '';
     if (tabUrl.startsWith('file://') && exactUrls.has(tabUrl)) return true;
@@ -474,23 +476,23 @@ async function closeTabsByUrls(urls) {
       return tabHostname && targetHostnames.includes(tabHostname);
     } catch { return false; }
   }).map(tab => tab.id);
-  if (toClose.length > 0) await chrome.tabs.remove(toClose);
+  if (toClose.length > 0) await _api.tabs.remove(toClose);
   await fetchOpenTabs();
 }
 
 async function closeTabsExact(urls) {
   if (!urls || urls.length === 0) return;
   const urlSet = new Set(urls);
-  const allTabs = await chrome.tabs.query({});
+  const allTabs = await _api.tabs.query({});
   const toClose = allTabs.filter(t => urlSet.has(t.url)).map(t => t.id);
-  if (toClose.length > 0) await chrome.tabs.remove(toClose);
+  if (toClose.length > 0) await _api.tabs.remove(toClose);
   await fetchOpenTabs();
 }
 
 async function focusTab(url) {
   if (!url) return;
-  const allTabs = await chrome.tabs.query({});
-  const currentWindow = await chrome.windows.getCurrent();
+  const allTabs = await _api.tabs.query({});
+  const currentWindow = await _api.windows.getCurrent();
   let matches = allTabs.filter(t => t.url === url);
   if (matches.length === 0) {
     try {
@@ -503,12 +505,12 @@ async function focusTab(url) {
   }
   if (matches.length === 0) return;
   const match = matches.find(t => t.windowId !== currentWindow.id) || matches[0];
-  await chrome.tabs.update(match.id, { active: true });
-  await chrome.windows.update(match.windowId, { focused: true });
+  await _api.tabs.update(match.id, { active: true });
+  await _api.windows.update(match.windowId, { focused: true });
 }
 
 async function closeDuplicateTabs(urls, keepOne = true) {
-  const allTabs = await chrome.tabs.query({});
+  const allTabs = await _api.tabs.query({});
   const toClose = [];
   for (const url of urls) {
     const matching = allTabs.filter(t => t.url === url);
@@ -521,32 +523,31 @@ async function closeDuplicateTabs(urls, keepOne = true) {
       for (const tab of matching) toClose.push(tab.id);
     }
   }
-  if (toClose.length > 0) await chrome.tabs.remove(toClose);
+  if (toClose.length > 0) await _api.tabs.remove(toClose);
   await fetchOpenTabs();
 }
 
 async function closeTabOutDupes() {
-  const extensionId = chrome.runtime.id;
-  const newtabUrl = `chrome-extension://${extensionId}/index.html`;
-  const allTabs = await chrome.tabs.query({});
-  const currentWindow = await chrome.windows.getCurrent();
-  const tabOutTabs = allTabs.filter(t => t.url === newtabUrl || t.url === 'chrome://newtab/');
+  const newtabUrl = _api.runtime.getURL('index.html');
+  const allTabs = await _api.tabs.query({});
+  const currentWindow = await _api.windows.getCurrent();
+  const tabOutTabs = allTabs.filter(t => t.url === newtabUrl);
   if (tabOutTabs.length <= 1) return;
   const keep =
     tabOutTabs.find(t => t.active && t.windowId === currentWindow.id) ||
     tabOutTabs.find(t => t.active) ||
     tabOutTabs[0];
   const toClose = tabOutTabs.filter(t => t.id !== keep.id).map(t => t.id);
-  if (toClose.length > 0) await chrome.tabs.remove(toClose);
+  if (toClose.length > 0) await _api.tabs.remove(toClose);
   await fetchOpenTabs();
 }
 
 /* ----------------------------------------------------------------
-   SAVED FOR LATER — chrome.storage.local
+   SAVED FOR LATER — _api.storage.local
    Data shape: array of { id, url, title, savedAt, completed, completedAt, dismissed }
    ---------------------------------------------------------------- */
 async function saveTabForLater(tab) {
-  const result = await chrome.storage.local.get('deferred');
+  const result = await _api.storage.local.get('deferred');
   const deferred = result.deferred || [];
   deferred.push({
     id:        Date.now().toString() + Math.random().toString(36).slice(2, 6),
@@ -556,11 +557,11 @@ async function saveTabForLater(tab) {
     completed: false,
     dismissed: false,
   });
-  await chrome.storage.local.set({ deferred });
+  await _api.storage.local.set({ deferred });
 }
 
 async function getSavedTabs() {
-  const result = await chrome.storage.local.get('deferred');
+  const result = await _api.storage.local.get('deferred');
   const deferred = result.deferred || [];
   const visible = deferred.filter(t => !t.dismissed);
   return {
@@ -570,34 +571,34 @@ async function getSavedTabs() {
 }
 
 async function checkOffSavedTab(id) {
-  const result = await chrome.storage.local.get('deferred');
+  const result = await _api.storage.local.get('deferred');
   const deferred = result.deferred || [];
   const tab = deferred.find(t => t.id === id);
   if (tab) {
     tab.completed = true;
     tab.completedAt = new Date().toISOString();
-    await chrome.storage.local.set({ deferred });
+    await _api.storage.local.set({ deferred });
   }
 }
 
 async function restoreSavedTab(id) {
-  const result = await chrome.storage.local.get('deferred');
+  const result = await _api.storage.local.get('deferred');
   const deferred = result.deferred || [];
   const tab = deferred.find(t => t.id === id);
   if (tab) {
     tab.completed = false;
     tab.completedAt = null;
-    await chrome.storage.local.set({ deferred });
+    await _api.storage.local.set({ deferred });
   }
 }
 
 async function dismissSavedTab(id) {
-  const result = await chrome.storage.local.get('deferred');
+  const result = await _api.storage.local.get('deferred');
   const deferred = result.deferred || [];
   const tab = deferred.find(t => t.id === id);
   if (tab) {
     tab.dismissed = true;
-    await chrome.storage.local.set({ deferred });
+    await _api.storage.local.set({ deferred });
   }
 }
 
@@ -922,6 +923,7 @@ function getRealTabs() {
       !url.startsWith('about:') &&
       !url.startsWith('edge://') &&
       !url.startsWith('brave://') &&
+      !url.startsWith('safari-web-extension://') &&
       !t.isTabOut
     );
   });
@@ -1438,7 +1440,7 @@ document.addEventListener('click', async (e) => {
   // Close all open tabs
   if (action === 'close-all-open-tabs') {
     const allUrls = openTabs
-      .filter(t => t.url && !t.url.startsWith('chrome') && !t.url.startsWith('about:'))
+      .filter(t => t.url && !t.url.startsWith('chrome') && !t.url.startsWith('safari') && !t.url.startsWith('about:'))
       .map(t => t.url);
     await closeTabsByUrls(allUrls);
     playCloseSound();
