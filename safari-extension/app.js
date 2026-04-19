@@ -408,7 +408,7 @@ async function renderWeather() {
   const el = document.getElementById('weatherWidget');
   if (!el) return;
   try {
-    const cacheKey = 'tabout-weather-cache';
+    const cacheKey = 'tabout-weather-v2';
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       const data = JSON.parse(cached);
@@ -419,7 +419,11 @@ async function renderWeather() {
       }
     }
     const resp = await fetch('https://wttr.in/?format=%t+%C');
-    const text = (await resp.text()).trim();
+    let text = (await resp.text()).trim();
+    if (text.startsWith('<')) {
+      const doc = new DOMParser().parseFromString(text, 'text/html');
+      text = doc.querySelector('.term-container')?.textContent?.trim() || '';
+    }
     const match = text.match(/^([+\-]?\d+°[CF])\s+(.+)$/);
     const result = match
       ? { temp: match[1], condition: match[2], timestamp: Date.now() }
