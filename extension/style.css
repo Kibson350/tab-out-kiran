@@ -939,6 +939,35 @@ footer {
 .settings-field { display: flex; flex-direction: column; gap: 4px; }
 .settings-field-checkbox { justify-content: flex-end; padding-bottom: 6px; }
 
+.theme-toggle-btns {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.theme-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1.5px solid var(--warm-gray);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  padding: 8px;
+}
+
+.theme-btn img { width: 20px; height: 20px; display: block; }
+
+.theme-btn.active {
+  background: rgba(102, 79, 194, 0.12);
+  border-color: #664FC2;
+}
+
+.theme-btn:hover:not(.active) { background: var(--warm-gray); }
+
 .settings-save {
   background: var(--ink);
   color: var(--paper);

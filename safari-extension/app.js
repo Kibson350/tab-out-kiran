@@ -1524,6 +1524,29 @@ function initSettingsPanel() {
     overlay.style.display = 'none';
   });
 
+  const themeBtnDark  = document.getElementById('themeBtnDark');
+  const themeBtnLight = document.getElementById('themeBtnLight');
+
+  function syncThemeBtns() {
+    const isDark = document.body.classList.contains('dark-mode');
+    themeBtnDark?.classList.toggle('active', isDark);
+    themeBtnLight?.classList.toggle('active', !isDark);
+  }
+
+  themeBtnDark?.addEventListener('click', () => {
+    document.body.classList.add('dark-mode');
+    localStorage.setItem('tabout-dark-mode', 'true');
+    syncThemeBtns();
+  });
+
+  themeBtnLight?.addEventListener('click', () => {
+    document.body.classList.remove('dark-mode');
+    localStorage.setItem('tabout-dark-mode', 'false');
+    syncThemeBtns();
+  });
+
+  toggle.addEventListener('click', syncThemeBtns);
+
   const addBtn = document.getElementById('settingsAddLink');
   if (addBtn) {
     addBtn.addEventListener('click', async () => {
